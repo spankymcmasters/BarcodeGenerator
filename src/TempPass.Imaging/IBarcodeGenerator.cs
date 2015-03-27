@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace TempPass.Imaging
 {
-    public interface IImageGenerator<T>
+    public interface IBarcodeGenerator<out TImageType>
     {
-        T GenerateImage(IEnumerable<string> data);
+        string GenerateData(params string[] values);
+        TImageType GenerateBarcodeImage(string data);
     }
 }

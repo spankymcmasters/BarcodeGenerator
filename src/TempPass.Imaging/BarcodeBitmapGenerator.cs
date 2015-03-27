@@ -1,33 +1,50 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Drawing;
-
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using ZXing;
-using ZXing.OneD;
-using ZXing.Rendering;
-
 
 namespace TempPass.Imaging
 {
-    public class BarcodeBitmapGenerator : IImageGenerator<Bitmap>
+    public class BarcodeBitmapGenerator : IBarcodeGenerator<Bitmap>
     {
-        public Bitmap GenerateImage(byte[] data)
+        private static EncodingOptionsFactory _encodingOptionsFactory = new EncodingOptionsFactory();
+        private BarcodeFormat _barcodeFormat;
+
+        public BarcodeBitmapGenerator(BarcodeFormat barcodeFormat)
+        {
+            _barcodeFormat = barcodeFormat;
+        }
+
+        public string GenerateData(params string[] values)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Bitmap GenerateBarcodeImage(string data)
         {
             const int width = 100;
             const int height = 50;
-            
-            Bitmap finalImg = null;
-            var content = Convert.ToBase64String(data);
-            var writer = new BarcodeWriter
-                         {
-                             Format = BarcodeFormat.CODE_128,
-                             Options = new Code128EncodingOptions() { Height=height,Width=width}
-                         };
 
-            var bitMatrix = writer.Encode(content);
-            
+            Bitmap finalImg = null;
+            var encodingOptions = _encodingOptionsFactory.GetEncodingOptions(_barcodeFormat);
+            encodingOptions.Height = height;
+            encodingOptions.Width = width;
+
+            var writer = new BarcodeWriter
+            {
+                Format = _barcodeFormat,
+                Options = encodingOptions
+            };
+
+            var bitMatrix = writer.Encode(data);
+
             using (var barcode = writer.Write(bitMatrix))
             {
-                using (var textImg = createTextImage(content, barcode.Height, barcode.Width, Color.White, Color.Black))
+                using (var textImg = createTextImage(data, barcode.Height, barcode.Width, Color.White, Color.Black))
                 {
                     finalImg = mergeBitmaps(barcode, textImg);
                 }
@@ -41,7 +58,7 @@ namespace TempPass.Imaging
         {
             const int minHeight = 10;
 
-            var newHeight = height/5;
+            var newHeight = height / 5;
             newHeight = newHeight < minHeight ? minHeight : newHeight;
             var font = new Font(FontFamily.GenericSansSerif, newHeight, FontStyle.Regular, GraphicsUnit.Pixel);
             var bitmap = new Bitmap(width, newHeight + 1);
@@ -50,13 +67,13 @@ namespace TempPass.Imaging
             {
                 using (
                     var stringFormat = new StringFormat()
-                                       {
-                                           Alignment = StringAlignment.Center,
-                                           LineAlignment = StringAlignment.Center
-                                       })
+                    {
+                        Alignment = StringAlignment.Center,
+                        LineAlignment = StringAlignment.Center
+                    })
                 {
                     objGraphics.Clear(backgroundColor);
-                    objGraphics.DrawString(imageText, font, new SolidBrush(fontColor), new RectangleF(0, 0,bitmap.Width, bitmap.Height), stringFormat);
+                    objGraphics.DrawString(imageText, font, new SolidBrush(fontColor), new RectangleF(0, 0, bitmap.Width, bitmap.Height), stringFormat);
                     objGraphics.Flush();
                 }
             }
@@ -89,7 +106,7 @@ namespace TempPass.Imaging
             }
 
             return outputImage;
-            
+
         }
     }
 }

@@ -45,7 +45,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BarcodeBitmapImageGenerator.cs" />
     <Compile Include="BarcodeBitmapGenerator.cs" />
+    <Compile Include="EncodingOptionsFactory.cs" />
+    <Compile Include="IBarcodeGenerator.cs" />
     <Compile Include="IImageGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
