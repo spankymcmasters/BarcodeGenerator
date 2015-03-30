@@ -8,7 +8,8 @@ namespace TempPass.Imaging
 {
     public interface IBarcodeGenerator<out TImageType>
     {
-        string GenerateData(params string[] values);
+        string Encode(IEnumerable<string> values);
+        IEnumerable<string> Decode(string data);
         TImageType GenerateBarcodeImage(string data);
     }
 }

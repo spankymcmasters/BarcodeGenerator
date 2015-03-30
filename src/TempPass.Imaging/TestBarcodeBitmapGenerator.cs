@@ -9,25 +9,59 @@ using ZXing;
 
 namespace TempPass.Imaging
 {
-    public class BarcodeBitmapGenerator : IBarcodeGenerator<Bitmap>
+    public class TestBarcodeBitmapGenerator : IBarcodeGenerator<Bitmap>
     {
+        private const char Separator = '|';
         private static EncodingOptionsFactory _encodingOptionsFactory = new EncodingOptionsFactory();
         private BarcodeFormat _barcodeFormat;
 
-        public BarcodeBitmapGenerator(BarcodeFormat barcodeFormat)
+        public TestBarcodeBitmapGenerator(BarcodeFormat barcodeFormat)
         {
             _barcodeFormat = barcodeFormat;
         }
 
-        public string GenerateData(params string[] values)
+        public string Encode(IEnumerable<string> values)
         {
-            throw new NotImplementedException();
+            Contract.Requires(null != values);
+
+            var sBuilder = new StringBuilder();
+
+            if (values.Any())
+            {
+                sBuilder.Append(values.First());
+
+                var dataCount = values.Count();
+
+                for (int i = 1; i < dataCount; i++)
+                {
+                    sBuilder.AppendFormat("{0}{1}", Separator, values.ElementAt(i));
+                }
+            }
+
+            var data = sBuilder.ToString();
+
+            return Convert.ToBase64String(Encoding.Unicode.GetBytes(data));
+        }
+
+        public IEnumerable<string> Decode(string data)
+        {
+            Contract.Requires(null != data);
+
+            var values = new List<string>();
+            var bytes = Convert.FromBase64String(data);
+            var separatedString = Encoding.Unicode.GetString(bytes);
+
+            values.AddRange(separatedString.Split(Separator));
+
+            return values;
         }
 
         public Bitmap GenerateBarcodeImage(string data)
         {
             const int width = 100;
             const int height = 50;
+
+            // get min image height/width
 
             Bitmap finalImg = null;
             var encodingOptions = _encodingOptionsFactory.GetEncodingOptions(_barcodeFormat);
@@ -61,7 +95,9 @@ namespace TempPass.Imaging
             var newHeight = height / 5;
             newHeight = newHeight < minHeight ? minHeight : newHeight;
             var font = new Font(FontFamily.GenericSansSerif, newHeight, FontStyle.Regular, GraphicsUnit.Pixel);
-            var bitmap = new Bitmap(width, newHeight + 1);
+            var textSize = getTextSize(imageText, font);
+            var newWidth = textSize.Width < width ? width : (int) textSize.Width;
+            var bitmap = new Bitmap(newWidth, newHeight + 1);
 
             using (var objGraphics = Graphics.FromImage(bitmap))
             {
@@ -106,7 +142,17 @@ namespace TempPass.Imaging
             }
 
             return outputImage;
+        }
 
+        private SizeF getTextSize(string text, Font font)
+        {
+            using (var tmpImg = new Bitmap(1, 1))
+            {
+                using (var tmpDrawing = Graphics.FromImage(tmpImg))
+                {
+                    return tmpDrawing.MeasureString(text, font);
+                }
+            }
         }
     }
 }

@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
-using System.Threading.Tasks;
+
 using ZXing;
 using ZXing.Common;
+using ZXing.Datamatrix;
 using ZXing.OneD;
+using ZXing.QrCode;
 
 namespace TempPass.Imaging
 {
@@ -20,6 +19,12 @@ namespace TempPass.Imaging
                                   {
                                       {
                                           BarcodeFormat.CODE_128, () => new Code128EncodingOptions()
+                                      },
+                                      {
+                                          BarcodeFormat.QR_CODE, () => new QrCodeEncodingOptions()
+                                      },
+                                      {
+                                          BarcodeFormat.DATA_MATRIX, () => new DatamatrixEncodingOptions()
                                       }
                                   };
 
